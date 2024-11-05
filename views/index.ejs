@@ -1,0 +1,62 @@
+<%- include('partials/header') %>
+
+<div class="container mt-4">
+  <!-- Slider delle Categorie -->
+  <h2 class="mb-4">Categorie</h2>
+  <div class="categories-slider d-flex overflow-auto">
+    <% categories.forEach(function(categoria) { %>
+      <div class="category-item text-center mx-2">
+        <a href="/eventi?categoria=<%= encodeURIComponent(categoria) %>">
+          <div class="icon-circle d-flex justify-content-center align-items-center">
+            <i class="bi <%= getCategoryIcon(categoria) %>"></i>
+          </div>
+          <small><%= categoria %></small>
+        </a>
+      </div>
+    <% }) %>
+  </div>
+
+  <!-- Eventi Popolari -->
+  <h2 class="mt-5">Eventi Popolari</h2>
+  <div class="row">
+    <% eventiPopolari.forEach(function(evento) { %>
+      <div class="col-md-4">
+        <div class="card mb-4">
+          <!-- Rimuoviamo l'immagine dell'evento -->
+          <div class="card-body">
+            <h5 class="card-title"><%= evento.titolo %></h5>
+            <p class="card-text">
+              <%= evento.descrizione.substring(0, 100) %>...
+            </p>
+            <a href="/eventi/<%= evento.id %>" class="btn btn-primary">
+              Dettagli
+            </a>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+
+  <!-- Eventi Consigliati -->
+  <h2 class="mt-5">Eventi Consigliati</h2>
+  <div class="row">
+    <% eventiMigliori.forEach(function(evento) { %>
+      <div class="col-md-4">
+        <div class="card mb-4">
+          <!-- Rimuoviamo l'immagine dell'evento -->
+          <div class="card-body">
+            <h5 class="card-title"><%= evento.titolo %></h5>
+            <p class="card-text">
+              <%= evento.descrizione.substring(0, 100) %>...
+            </p>
+            <a href="/eventi/<%= evento.id %>" class="btn btn-primary">
+              Dettagli
+            </a>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

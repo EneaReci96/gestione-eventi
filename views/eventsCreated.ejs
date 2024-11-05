@@ -1,0 +1,39 @@
+<!-- views/eventsCreated.ejs -->
+
+<%- include('partials/header') %>
+
+<div class="container mt-5">
+  <h2>Eventi che ho Creato</h2>
+
+  <% if (eventi && eventi.length > 0) { %>
+    <table class="table mt-4">
+      <thead>
+        <tr>
+          <th>Titolo</th>
+          <th>Data Inizio</th>
+          <th>Luogo</th>
+          <th>Azioni</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% eventi.forEach(function(evento) { %>
+          <tr>
+            <td><a href="/eventi/<%= evento.id %>"><%= evento.titolo %></a></td>
+            <td><%= evento.data_inizio.toISOString().slice(0, 16);%></td>
+            <td><%= evento.luogo %></td>
+            <td>
+              <a href="/eventi/modifica/<%= evento.id %>" class="btn btn-sm btn-warning">Modifica</a>
+              <form action="/eventi/elimina/<%= evento.id %>" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Sei sicuro di voler eliminare questo evento?');">Elimina</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <p class="mt-4">Non hai creato alcun evento.</p>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

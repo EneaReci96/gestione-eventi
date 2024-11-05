@@ -1,0 +1,23 @@
+<!-- views/eventsParticipated.ejs -->
+
+<%- include('partials/header') %>
+
+<div class="container mt-5">
+  <h2>Eventi a cui Partecipo</h2>
+
+  <% if (eventi && eventi.length > 0) { %>
+    <ul class="list-group mt-4">
+      <% eventi.forEach(function(evento) { %>
+        <li class="list-group-item">
+          <a href="/eventi/<%= evento.id %>"><%= evento.titolo %></a>
+          <br>
+          <small>Organizzato da: <%= evento.organizzatore.nome %> <%= evento.organizzatore.cognome %></small>
+        </li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p class="mt-4">Non stai partecipando a nessun evento.</p>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

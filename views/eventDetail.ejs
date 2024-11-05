@@ -1,0 +1,156 @@
+<!-- views/eventDetail.ejs -->
+
+<%- include('partials/header') %>
+
+<div class="container mt-5">
+  <h2><%= evento.titolo %></h2>
+
+  <div class="row mt-4">
+    <div class="col-12 col-md-6">
+      <p><strong>Descrizione:</strong> <%= evento.descrizione %></p>
+      <p><strong>Luogo:</strong> <%= evento.luogo %></p>
+      <p><strong>Data Inizio:</strong> <%= evento.data_inizio.toISOString().slice(0, 16); %></p>
+      <p><strong>Data Fine:</strong> <%= evento.data_fine.toISOString().slice(0, 16); %></p>
+      <p><strong>Organizzatore:</strong> <%= evento.organizzatore.nome %> <%= evento.organizzatore.cognome %></p>
+      <% if (mediaValutazioni > 0) { %>
+        <p><strong>Valutazione Media:</strong> <%= mediaValutazioni %> / 5</p>
+      <% } else { %>
+        <p><strong>Valutazione Media:</strong> Non ancora disponibile</p>
+      <% } %>
+      <% if (currentUser) { %>
+        <% let haPartecipato = false; %>
+        <% evento.partecipanti.forEach(partecipante => { %>
+          <% if (partecipante.id === currentUser.id) { %>
+            <% haPartecipato = true; %>
+          <% } %>
+        <% }); %>
+        <% if (!haPartecipato) { %>
+          <form action="/eventi/<%= evento.id %>/partecipa" method="POST">
+            <button type="submit" class="btn btn-success">Partecipa</button>
+          </form>
+        <% } else { %>
+          <p class="text-success">Hai già partecipato a questo evento.</p>
+        <% } %>
+      <% } else { %>
+        <p><a href="/login">Accedi</a> per partecipare a questo evento.</p>
+      <% } %>
+    </div>
+    <div class="col-12 col-md-6">
+      <!-- Mappa con Leaflet -->
+      <div id="map" style="height: 400px;"></div>
+    </div>
+  </div>
+
+  <!-- Sezione per lasciare una recensione -->
+  <% if (currentUser) { %>
+    <% let haPartecipato = false; %>
+    <% evento.partecipanti.forEach(partecipante => { %>
+      <% if (partecipante.id === currentUser.id) { %>
+        <% haPartecipato = true; %>
+      <% } %>
+    <% }); %>
+
+    <% if (haPartecipato) { %>
+      <% let haRecensito = false; %>
+      <% evento.Reviews.forEach(recensione => { %>
+        <% if (recensione.utenteId === currentUser.id) { %>
+          <% haRecensito = true; %>
+        <% } %>
+      <% }); %>
+
+      <% if (!haRecensito) { %>
+        <h3 class="mt-5">Lascia una Recensione</h3>
+        <form action="/eventi/<%= evento.id %>/recensioni" method="POST">
+          <div class="mb-3">
+            <label for="valutazione" class="form-label">Valutazione:</label>
+            <select class="form-select" name="valutazione" required>
+              <option value="5">★★★★★ - Ottimo</option>
+              <option value="4">★★★★☆ - Buono</option>
+              <option value="3">★★★☆☆ - Discreto</option>
+              <option value="2">★★☆☆☆ - Scarso</option>
+              <option value="1">★☆☆☆☆ - Pessimo</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="commento" class="form-label">Commento:</label>
+            <textarea class="form-control" name="commento" rows="3"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Invia Recensione</button>
+        </form>
+      <% } else { %>
+        <p class="mt-4 text-success">Hai già recensito questo evento.</p>
+      <% } %>
+    <% } %>
+  <% } %>
+  
+  <!-- Pulsante per acquistare il biglietto o partecipare -->
+  <% if (currentUser && !isPartecipante) { %>
+    <% if (evento.prezzo > 0) { %>
+      <form action="/eventi/<%= evento.id %>/acquista" method="POST">
+        <button type="submit" class="btn btn-primary mt-3">
+          Acquista Biglietto - €<%= evento.prezzo %>
+        </button>
+      </form>
+    <% } else { %>
+      <form action="/eventi/<%= evento.id %>/partecipa" method="POST">
+        <button type="submit" class="btn btn-primary mt-3">
+          Partecipa Gratuitamente
+        </button>
+      </form>
+    <% } %>
+  <% } %>
+
+  <!-- Visualizzazione delle recensioni -->
+  <h3 class="mt-5">Recensioni</h3>
+  <% if (evento.Reviews.length > 0) { %>
+    <% evento.Reviews.forEach(recensione => { %>
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title"><%= recensione.User.nome %> <%= recensione.User.cognome %></h5>
+          <h6 class="card-subtitle mb-2 text-muted">Valutazione: <%= recensione.valutazione %> / 5</h6>
+          <p class="card-text"><%= recensione.commento %></p>
+        </div>
+      </div>
+    <% }); %>
+  <% } else { %>
+    <p>Nessuna recensione disponibile.</p>
+  <% } %>
+</div>
+
+<!-- Script per la mappa 
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  var map = L.map('map').setView([<%= evento.latitudine %>, <%= evento.longitudine %>], 13);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  L.marker([<%= evento.latitudine %>, <%= evento.longitudine %>]).addTo(map)
+    .bindPopup('<%= evento.titolo %>')
+    .openPopup();
+</script>
+-->
+<!-- Script per la mappa google -->
+<script src="https://maps.googleapis.com/maps/api/js?key=<%= process.env.GOOGLE_MAPS_API_KEY%>"></script>
+<script>
+  function initMap() {
+    const eventPosition = {
+      lat: <%= evento.latitudine %>,
+      lng: <%= evento.longitudine %>
+    };
+
+    const map = new google.maps.Map(document.getElementById('map'), {
+      center: eventPosition,
+      zoom: 15,
+    });
+
+    const marker = new google.maps.Marker({
+      position: eventPosition,
+      map: map,
+    });
+  }
+
+  google.maps.event.addDomListener(window, 'load', initMap);
+</script>
+<%- include('partials/footer') %>

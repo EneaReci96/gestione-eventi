@@ -1,0 +1,134 @@
+<!-- views/eventForm.ejs -->
+
+<%- include('partials/header', { title: evento && evento.id ? 'Modifica Evento' : 'Crea Nuovo Evento' }) %>
+
+<div class="container mt-5">
+  <h2><%= evento && evento.id ? 'Modifica Evento' : 'Crea un Nuovo Evento' %></h2>
+
+  <form action="<%= evento && evento.id ? '/eventi/modifica/' + evento.id : '/eventi/nuovo' %>" method="POST">
+    <!-- Titolo -->
+    <div class="mb-3">
+      <label for="titolo" class="form-label">Titolo:</label>
+      <input type="text" class="form-control" name="titolo" value="<%= evento.titolo || '' %>" required>
+    </div>
+
+    <!-- Descrizione -->
+    <div class="mb-3">
+      <label for="descrizione" class="form-label">Descrizione:</label>
+      <textarea class="form-control" name="descrizione" required><%= evento.descrizione || '' %></textarea>
+    </div>
+
+    <!-- Data Inizio -->
+    <div class="mb-3">
+      <label for="data_inizio" class="form-label">Data Inizio:</label>
+      <input type="datetime-local" class="form-control" name="data_inizio" value="<%= evento.data_inizio ? evento.data_inizio.toISOString().slice(0,16) : '' %>" required>
+    </div>
+
+    <!-- Data Fine -->
+    <div class="mb-3">
+      <label for="data_fine" class="form-label">Data Fine:</label>
+      <input type="datetime-local" class="form-control" name="data_fine" value="<%= evento.data_fine ? evento.data_fine.toISOString().slice(0,16) : '' %>" required>
+    </div>
+
+    <!-- Luogo -->
+    <div class="mb-3">
+      <label for="luogo" class="form-label">Luogo:</label>
+      <input type="text" id="luogo" name="luogo" class="form-control" value="<%= evento.luogo || '' %>" required>
+    </div>
+
+    <!-- Categoria -->
+    <div class="mb-3">
+      <label for="categoria" class="form-label">Categoria:</label>
+      <select class="form-select" name="categoria" required>
+        <% categories.forEach(function(categoria) { %>
+          <option value="<%= categoria %>" <% if (evento.categoria === categoria) { %>selected<% } %>><%= categoria %></option>
+        <% }); %>
+      </select>
+    </div>
+
+    <!-- Prezzo -->
+    <div class="mb-3">
+      <label for="prezzo" class="form-label">Prezzo (€):</label>
+      <input type="number" step="0.01" class="form-control" id="prezzo" name="prezzo" value="<%= evento.prezzo || '' %>" required>
+    </div>
+
+    <!-- Mappa per selezionare la posizione -->
+    <div class="mb-3">
+      <label class="form-label">Seleziona la posizione sulla mappa:</label>
+      <div id="map" style="height: 400px;"></div>
+    </div>
+
+    <!-- Campi nascosti per le coordinate -->
+    <input type="hidden" name="latitudine" id="latitudine" value="<%= evento.latitudine || '' %>">
+    <input type="hidden" name="longitudine" id="longitudine" value="<%= evento.longitudine || '' %>">
+
+    <!-- Pulsante di invio -->
+    <button type="submit" class="btn btn-primary"><%= evento && evento.id ? 'Salva Modifiche' : 'Crea Evento' %></button>
+  </form>
+</div>
+
+<!-- Include i file JS necessari -->
+<script src="https://maps.googleapis.com/maps/api/js?key=<%= process.env.GOOGLE_MAPS_API_KEY %>&libraries=places"></script>
+<script>
+  let map;
+  let marker;
+
+  function initMap() {
+    const initialPosition = {
+      lat: parseFloat('<%= evento.latitudine || 41.9028 %>'),
+      lng: parseFloat('<%= evento.longitudine || 12.4964 %>')
+    };
+
+    map = new google.maps.Map(document.getElementById('map'), {
+      center: initialPosition,
+      zoom: <%= evento.latitudine && evento.longitudine ? 15 : 6 %>,
+    });
+
+    marker = new google.maps.Marker({
+      position: initialPosition,
+      map: map,
+      draggable: true,
+    });
+
+    // Aggiorna i campi latitudine e longitudine quando il marker viene spostato
+    google.maps.event.addListener(marker, 'dragend', function() {
+      document.getElementById('latitudine').value = marker.getPosition().lat();
+      document.getElementById('longitudine').value = marker.getPosition().lng();
+    });
+
+    // Quando l'utente clicca sulla mappa, sposta il marker
+    google.maps.event.addListener(map, 'click', function(event) {
+      marker.setPosition(event.latLng);
+      document.getElementById('latitudine').value = event.latLng.lat();
+      document.getElementById('longitudine').value = event.latLng.lng();
+    });
+  }
+
+  function initAutocomplete() {
+    const input = document.getElementById('luogo');
+    const autocomplete = new google.maps.places.Autocomplete(input);
+
+    autocomplete.addListener('place_changed', function() {
+      const place = autocomplete.getPlace();
+      if (!place.geometry) {
+        return;
+      }
+
+      // Seleziona la posizione sulla mappa
+      map.setCenter(place.geometry.location);
+      map.setZoom(15);
+      marker.setPosition(place.geometry.location);
+
+      // Aggiorna latitudine e longitudine
+      document.getElementById('latitudine').value = place.geometry.location.lat();
+      document.getElementById('longitudine').value = place.geometry.location.lng();
+    });
+  }
+
+  google.maps.event.addDomListener(window, 'load', function() {
+    initMap();
+    initAutocomplete();
+  });
+</script>
+
+<%- include('partials/footer') %>

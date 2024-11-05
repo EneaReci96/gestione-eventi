@@ -1,0 +1,72 @@
+<!-- views/events.ejs -->
+<%- include('partials/header') %>
+
+<div class="container mt-5">
+  <h2 class="mb-4">Lista degli Eventi</h2>
+
+  <!-- Form di ricerca avanzata -->
+  <form action="/eventi" method="GET" class="row g-3">
+    <div class="col-12 col-md-3">
+      <input type="text" class="form-control" name="keyword" placeholder="Parola chiave" value="<%= keyword || '' %>">
+    </div>
+    <div class="col-6 col-md-2">
+      <input type="date" class="form-control" name="data_da" value="<%= data_da || '' %>">
+    </div>
+    <div class="col-6 col-md-2">
+      <input type="date" class="form-control" name="data_a" value="<%= data_a || '' %>">
+    </div>
+    <div class="col-6 col-md-2">
+      <input type="text" class="form-control" name="luogo" placeholder="Luogo" value="<%= luogo || '' %>">
+    </div>
+    <div class="col-6 col-md-2">
+      <select class="form-select" name="categoria">
+        <option value="">Tutte le categorie</option>
+        <% categories.forEach(function(cat) { %>
+          <option value="<%= cat %>" <% if (categoria === cat) { %>selected<% } %>><%= cat %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="col-6 col-md-2">
+      <input type="number" class="form-control" name="prezzo_max"
+             placeholder="Prezzo massimo (€)" value="<%= prezzo_max || '' %>">
+    </div>
+    <div class="col-6 col-md-2">
+      <input type="number" class="form-control" name="valutazione_min"
+             placeholder="Valutazione minima" step="0.1"
+             value="<%= valutazione_min || '' %>">
+    </div>
+    <div class="col-12 col-md-1">
+      <button type="submit" class="btn btn-primary w-100">Cerca</button>
+    </div>
+  </form>
+
+  <!-- Lista degli eventi -->
+  <% if (eventi.length > 0) { %>
+    <div class="mt-4">
+      <% eventi.forEach(evento => { %>
+        <div class="card mb-3">
+          <div class="card-body">
+            <h5 class="card-title"><a href="/eventi/<%= evento.id %>"><%= evento.titolo %></a></h5>
+            <p class="card-text">
+              <strong>Luogo:</strong> <%= evento.luogo %><br>
+              <strong>Data Inizio:</strong> <%= evento.data_inizio.toISOString().slice(0, 16); %><br>
+              <strong>Categoria:</strong> <%= evento.categoria %><br>
+              <% if (evento.mediaValutazioni > 0) { %>
+                <strong>Valutazione Media:</strong> <%= evento.mediaValutazioni %> / 5
+              <% } else { %>
+                <strong>Valutazione Media:</strong> Non ancora disponibile
+              <% } %>
+            </p>
+            <% if (currentUser && currentUser.id === evento.organizzatoreId) { %>
+              <a href="/eventi/modifica/<%= evento.id %>" class="btn btn-warning">Modifica</a>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <p class="mt-4">Nessun evento trovato.</p>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

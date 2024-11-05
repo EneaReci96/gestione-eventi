@@ -1,0 +1,32 @@
+<!-- views/tickets.ejs -->
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <%- include('partials/header') %>
+  <title>I Miei Biglietti</title>
+</head>
+<body>
+  <div class="container">
+    <h1>I Miei Biglietti</h1>
+    <% if (eventi.length === 0) { %>
+      <p>Non hai partecipato a nessun evento.</p>
+    <% } else { %>
+      <div class="row">
+        <% eventi.forEach(evento => { %>
+          <div class="col-md-4">
+            <div class="card mb-4">
+              <div class="card-body">
+                <h5 class="card-title"><%= evento.titolo %></h5>
+                <p class="card-text"><%= evento.descrizione %></p>
+                <p><strong>Data:</strong> <%= evento.data_inizio.toLocaleDateString('it-IT') %></p>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+  <%- include('partials/footer') %>
+</body>
+</html>

@@ -1,0 +1,23 @@
+# Dipendenze Node.js
+node_modules/
+
+# Variabili d'ambiente
+.env
+.env.example
+
+
+# Database SQLite 
+database.sqlite
+
+# File e cartelle di editor/IDE
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# File Git
+.git/
+
+
+# File zip
+.zip/
